@@ -1,27 +1,39 @@
-version: 2.1
-# Define the jobs we want to run for this project
-
+version: 2
 jobs:
-  build_docker_image:
+  build:
+    environment:
+      IMAGE_NAME: dondausi/snarkos
     docker:
-      - image: dondausi/snarkos:latest
-        auth:
-          username: $DOCKER_HUB_USER
-          password: $DOCKER_HUB_PASSWORD 
+      - image: circleci/buildpack-deps:stretch
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
+      - setup_remote_docker
       - run:
-          name: Run snarkos command
+          name: Build Docker image
+          command: docker build -t $IMAGE_NAME:latest .
+  publish-latest:
+    environment:
+      IMAGE_NAME: dondausi/snarkos
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - setup_remote_docker
+      - run:
+          name: Publish Docker Image to Docker Hub
           command: |
-            snarkos account new
-  
+            echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USER" --password-stdin
+            docker push $IMAGE_NAME:latest
 workflows:
-  build:
+  version: 2
+  build-master:
     jobs:
-      - build_docker_image
-          
-
-
- 
+      - build:
+          filters:
+            branches:
+              only: testnet3
+      - publish-latest:
+          requires:
+            - build
+          filters:
+            branches:
+              only: testnet3
