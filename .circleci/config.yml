@@ -6,8 +6,8 @@ jobs:
     docker:
       - image: dondausi/snarkos:latest
         auth:
-          username: dondausi
-          password: Twende2030$ 
+          username: $DOCKER_HUB_USER
+          password: $DOCKER_HUB_PASSWORD 
     steps:
       - checkout
       - setup_remote_docker:
