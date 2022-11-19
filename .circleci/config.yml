@@ -5,6 +5,9 @@ jobs:
   build_docker_image:
     docker:
       - image: dondausi/snarkos:latest
+         auth:
+           username: dondausi
+           password: $DOCKERHUB_PASSWORD 
     steps:
       - checkout
       - setup_remote_docker:
