@@ -1,48 +1,24 @@
+version: 2.1
 # Define the jobs we want to run for this project
+
 jobs:
-  build:
-    working_directory: /app
+  build_docker_image:
     docker:
       - image: dondausi/snarkos:latest
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          docker_layer_caching: true
       - run:
-          name: Install depencies
+          name: Build Docker Image
           command: |
-              set -eux ; \
-              apt-get update -y && \
-              apt-get dist-upgrade -y && \
-              apt-get install -y --no-install-recommends \
-                  ca-certificates \
-                  gcc \
-                  libc6-dev \
-                  wget \
-                  build-essential \
-                  clang \
-                  gcc \
-                  libssl-dev \
-                  make \
-                  pkg-config \
-                  xz-utils && \
-              dpkgArch="$(dpkg --print-architecture)"; \
-              case "${dpkgArch##*-}" in \
-                  amd64) rustArch='x86_64-unknown-linux-gnu' ;; \
-                  arm64) rustArch='aarch64-unknown-linux-gnu' ;; \
-                  *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \
-              esac; \
-              \
-              url="https://static.rust-lang.org/rustup/dist/${rustArch}/rustup-init"; \
-              wget "$url"; \
-              chmod +x rustup-init; \
-              ./rustup-init -y --no-modify-path --default-toolchain stable; \
-              rm rustup-init; \
-              chmod -R a+w $RUSTUP_HOME $CARGO_HOME; \
-              rustup --version; \
-              cargo --version; \
-              rustc --version; \
-              apt-get remove -y --auto-remove wget && \
-              apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false && \
-              apt-get clean && \
-              rm -rf /var/lib/apt/lists/*;
+            docker build -t dondausi/snarkos --platform=linux/arm64 .
+  
+workflows:
+  build:
+    jobs:
+      - build_docker_image
+          
+
+
  
