@@ -13,9 +13,9 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
-          name: Build Docker Image
+          name: Run snarkos command
           command: |
-            docker build -t dondausi/snarkos --platform=linux/arm64 .
+            snarkos account new
   
 workflows:
   build:
